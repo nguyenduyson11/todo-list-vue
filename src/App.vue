@@ -3,12 +3,12 @@
     <h1 class="title">TODOS</h1>
     <label v-if="errors.length > 0">{{ errors[0] }}</label>
     <div class="input-task">
-      <input @keyup.enter="addTask" v-model.trim="inputTask" required />
+      <input @keyup.enter="addNewTask" v-model.trim="inputTask" />
     </div>
     <div class="container">
-      <ProgressBar :progress="getProgress()" />
+      <ProgressBar :progress="getProgressTasks" />
       <div class="task-header">
-        <span class="task-header-left">{{ countTask }}</span>
+        <span class="task-header-left">{{ getCountTasks }}</span>
         <div class="task-header-right">
           <span
             @click="setFilter"
@@ -31,12 +31,7 @@
         </div>
       </div>
       <div class="task-body">
-        <ListTask
-          :tasks="filterTaskByStatus()"
-          :handleRemoveTask="handleRemoveTask"
-          :handleEditTask="handleEditTask"
-          :handleUpdateStatus="handleUpdateStatus"
-        />
+        <ListTask :tasks="filterTask()" :handleEditTask="handleEditTask" />
       </div>
     </div>
   </div>
@@ -45,103 +40,64 @@
 <script>
 import ListTask from "./components/ListTask.vue";
 import ProgressBar from "./components/ProgressBar.vue";
-import { taskStatus } from "./commons/constants.js";
+import { mapGetters, mapActions } from "vuex";
 export default {
   name: "App",
   data() {
     return {
-      selectTask: null,
       errors: [],
       inputTask: "",
       filter: "",
-      tasks: [
-        { id: 1, name: "Learn Javascript", status: "active" },
-        {
-          id: 2,
-          name: "Learn Vuejs",
-          status: "active",
-        },
-        {
-          id: 3,
-          name: "Learn Vuejs",
-          status: "completed",
-        },
-      ],
     };
   },
   methods: {
-    addTask() {
+    ...mapActions(["addTask", "updateTask", "selectTask"]),
+    addNewTask() {
       if (!this.inputTask) {
         this.errors.push("Vui lòng nhập giá trị");
         return;
       }
-      if (this.selectTask) {
-        this.editTask();
+      if (this.getSelectTask) {
+        this.updateTask({
+          ...this.getSelectTask,
+          name: this.inputTask,
+        });
       } else {
-        this.tasks = [
-          ...this.tasks,
-          {
-            id: this.tasks.length + 1,
-            name: this.inputTask,
-            status: "active",
-          },
-        ];
-        this.inputTask = "";
+        this.addTask({
+          name: this.inputTask,
+          status: "active",
+        });
       }
-    },
-    getProgress() {
-      const countTask = this.tasks.length;
-      const TasksCompleted = this.tasks.filter(
-        (task) => task.status === taskStatus.completed
-      );
-      return {
-        countTask,
-        countTaskCompleted: TasksCompleted.length,
-      };
-    },
-    handleRemoveTask({ id }) {
-      const listTasks = this.tasks;
-      const isExistTask = listTasks.findIndex((task) => task.id === id);
-      listTasks.splice(isExistTask, 1);
-    },
-    handleEditTask(task) {
-      this.selectTask = task;
-      this.inputTask = task.name;
-    },
-    editTask() {
-      const tasks = this.tasks;
-      const isExistTask = tasks.findIndex(
-        (task) => task.id === this.selectTask.id
-      );
-      tasks.splice(isExistTask, 1, {
-        ...this.selectTask,
-        name: this.inputTask,
-      });
-      this.selectTask = null;
       this.inputTask = "";
-    },
-    filterTaskByStatus() {
-      if (!this.filter) {
-        return this.tasks;
-      }
-      return this.tasks.filter((task) => task.status === this.filter);
+      this.selectTask(null);
+      this.errors = [];
     },
     setFilter(event) {
-      this.filter = event.target.getAttribute("value");
+      const status = event.target.getAttribute("value");
+      if (status === this.filter) {
+        this.filter = "";
+      } else {
+        this.filter = status;
+      }
     },
-    handleUpdateStatus({ taskChecked, status }) {
-      const listTasks = this.tasks;
-      const isExistTask = listTasks.findIndex(
-        (task) => task.id === taskChecked.id
-      );
-      console.log(isExistTask);
-      listTasks.splice(isExistTask, 1, { ...taskChecked, status });
+    filterTask() {
+      const tasks = this.getAllTasks;
+      if (!this.filter) {
+        return tasks;
+      }
+      return tasks.filter((task) => task.status === this.filter);
+    },
+    handleEditTask() {
+      this.inputTask = this.getSelectTask.name;
     },
   },
   computed: {
-    countTask() {
-      return `${this.tasks.length} item left`;
-    },
+    ...mapGetters([
+      "getAllTasks",
+      "getProgressTasks",
+      "getCountTasks",
+      "getSelectTask",
+    ]),
   },
   components: {
     ListTask,

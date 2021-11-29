@@ -1,6 +1,6 @@
 <template lang="">
   <div>
-    <Task v-for="task in tasks" :key="task.id" :task="task" :removeTask="removeTask" :editTask="editTask" :updateStatus="updateStatus" />
+    <Task v-for="task in tasks" :key="task.id" :task="task"  :editTask="editTask"  />
   </div>
 </template>
 <script>
@@ -9,22 +9,14 @@ export default {
   name: "ListTask",
   props: {
     tasks: Array,
-    handleRemoveTask: Function,
     handleEditTask: Function,
-    handleUpdateStatus: Function,
   },
   components: {
     Task,
   },
   methods: {
-    removeTask(task) {
-      this.handleRemoveTask(task);
-    },
     editTask(task) {
       this.handleEditTask(task);
-    },
-    updateStatus({ task, status }) {
-      this.handleUpdateStatus({ taskChecked: task, status });
     },
   },
 };

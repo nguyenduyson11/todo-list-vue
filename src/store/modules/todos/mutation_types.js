@@ -1,0 +1,6 @@
+export const mulation_types = {
+  NEW_TASK: "NEW_TASK",
+  REMOVE_TASK: "REMOVE_TASK",
+  UPDATE_TASK: "UPDATE_TASK",
+  SELECT_TASK: "SELECT_TASK"
+}
