@@ -11,6 +11,7 @@
 </template>
 <script>
 import { taskStatus } from "../commons/constants.js";
+import { mapActions } from "vuex";
 export default {
   name: "Task",
   data() {
@@ -20,20 +21,20 @@ export default {
   },
   props: {
     task: Object,
-    removeTask: Function,
     editTask: Function,
-    updateStatus: Function,
   },
   methods: {
+    ...mapActions(["selectTask", "deleteTask", "updateTask"]),
     handleRemoveTask() {
-      this.removeTask(this.task);
+      this.deleteTask(this.task.id);
     },
     handleEditTask() {
+      this.selectTask(this.task);
       this.editTask(this.task);
     },
     handleUpdateStatusTask() {
-      this.updateStatus({
-        task: this.task,
+      this.updateTask({
+        ...this.task,
         status: this.checkedTask ? taskStatus.completed : taskStatus.active,
       });
     },
